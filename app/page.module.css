@@ -1,11 +1,110 @@
-.videoContainer {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    align-items: center;
 
-    .video {
-        width: 50%;
-        height: 100%
+
+.main {
+
+    --background-gradient: linear-gradient(30deg, #f39c12 30%, #f1c40f);
+    --off-white: #cecece38;
+
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 2em;
+
+    .button {
+        background: #5E5DF0;
+        border-radius: 999px;
+        box-shadow: #5E5DF0 0 10px 20px -10px;
+        box-sizing: border-box;
+        color: #FFFFFF;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 24px;
+        opacity: 1;
+        outline: 0 solid transparent;
+        padding: 8px 18px;
+        -webkit-user-select: none;
+        user-select: none;
+        touch-action: manipulation;
+        width: fit-content;
+        word-break: break-word;
+        border: 0;
+
+        &.stopButton {
+            background-color: #e62143;
+            box-shadow: #e62143 0 10px 20px -10px;
+        }
+    }
+
+    /* Custom Select wrapper */
+    .select {
+        position: relative;
+        display: flex;
+        width: calc(100% + 15em);;
+        height: 3em;
+        border-radius: .25em;
+        overflow: hidden;
+
+        /* Arrow */
+        &::after {
+            content: '\25BC';
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 1em;
+            background-color: var(--off-white);
+            transition: .25s all ease;
+            pointer-events: none;
+        }
+        /* Transition */
+        &:hover::after {
+            color: #5E5DF0;
+        }
+
+        .customSelect {
+            /* Reset Select */
+            appearance: none;
+            outline: 0;
+            border: 0;
+            box-shadow: none;
+            /* Personalize */
+            flex: 1;
+            padding: 0 1em;
+            color: #000;
+            background-color: var(--off-white);
+            background-image: none;
+            cursor: pointer;
+        }
+    }
+
+    .micOptions {
+        display: flex;
+        align-items: center;
+        gap: 1em;
+        justify-content: center;
+
+        .micOptionsLabel {
+            flex-basis: 110px;
+        }
+    }
+
+    .optionsPanel {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .videoSection {
+        .videoContainer {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            .video {
+                width: 50%;
+                height: 100%
+            }
+        }
     }
 }

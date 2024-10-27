@@ -23,6 +23,8 @@ export default function Home() {
 
   const [audioDevices, setAudioDevices] = useState();
   const [recordingInProgress, setRecordingInProgress] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
+
   const streamRef = useRef();
   const audioStreamRef = useRef();
   const mergedStreams = useRef();
@@ -33,6 +35,7 @@ export default function Home() {
   const chunksRef = useRef();
 
   const videoElementRef = useRef();
+  const videoUrl = useRef();
 
   const mergeAudioStreams = useCallback((desktopStream, voiceStream) => {
     const context = new AudioContext();
@@ -92,7 +95,8 @@ export default function Home() {
   const startRecording = async () => {
     try {
       chunksRef.current = [];
-      videoElementRef.current.src = null;
+      if (videoElementRef.current && videoElementRef.current.src) videoElementRef.current.src = null;
+      videoUrl.current = null;
       streamRef.current = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
       let audioOptions = {
         echoCancellation: true, sampleRate: 44100
@@ -117,10 +121,9 @@ export default function Home() {
 
       mediaRecorderRef.current.onstop = (e) => {
         const screenBlob = new Blob(chunksRef.current, { type: "video/webm; codecs=vp8,opus" });
-        const videoUrl = URL.createObjectURL(screenBlob);
+        videoUrl.current = URL.createObjectURL(screenBlob);
 
-        videoElementRef.current.controls = true;
-        videoElementRef.current.src = videoUrl;
+        setShowVideo(true);
       }
 
       const tracks = streamRef.current.getVideoTracks();
@@ -133,6 +136,7 @@ export default function Home() {
       }
       mediaRecorderRef.current.start(500);
       setRecordingInProgress(true);
+      setShowVideo(false);
     } catch (err) {
       console.error(err);
     }
@@ -169,32 +173,54 @@ export default function Home() {
     audioDevice.current = e.target.value;
   }
 
-  const showPermissionsButton = !audioDevices || audioDevices[0].deviceId === '';
+  const showPermissionsButton = audioDevices && audioDevices[0].deviceId === '';
 
   useEffect(() => {
     fetchDevices();
   }, [])
 
+  useEffect(() => {
+    if (showVideo) {
+      videoElementRef.current.controls = true;
+      videoElementRef.current.src = videoUrl.current;
+    }
+  }, [showVideo])
+
+  if (!audioDevices) return null;
+
   return (
-    <>
+    <main className={classes.main}>
       <h1>Offline recorder</h1>
-      {showPermissionsButton && <button onClick={getPermission}>Get Permissions</button>}
-      {!showPermissionsButton &&
-        <>
-          <div>Mic: <select onChange={onAudioDeviceChange}>
-            {audioDevices.map((device) => (
-              <option key={device.deviceId} value={device.deviceId}>{device.label}</option>
-            ))}
-          </select>
-          </div>
-          {!recordingInProgress && <button onClick={startRecording}>Record</button>}
-          {recordingInProgress && <button onClick={stopRecording}>Stop Recording</button>}
-          <div className={classes.videoContainer}>
-            <span>Playback</span>
-            <video className={classes.video} ref={videoElementRef}></video>
-          </div>
-        </>
-      }
-    </>
+      <section className={classes.optionsPanel}>
+        {showPermissionsButton && <button className={classes.button} onClick={getPermission}>Get Permissions</button>}
+        {!showPermissionsButton &&
+          <>
+            {!recordingInProgress &&
+              <div className={classes.micOptions}>
+                <label className={classes.micOptionsLabel}>Current Mic:</label>
+                <div className={classes.select}>
+                  <select className={classes.customSelect} onChange={onAudioDeviceChange}>
+                    {audioDevices.map((device) => (
+                      <option key={device.deviceId} value={device.deviceId}>{device.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            }
+            {
+              recordingInProgress && <div>Recording in progess...</div>
+            }
+            {!recordingInProgress && <button className={classes.button} onClick={startRecording}>Record</button>}
+            {recordingInProgress && <button className={`${classes.button} ${classes.stopButton}`} onClick={stopRecording}>Stop Recording</button>}
+          </>
+        }
+      </section>
+      {showVideo && <section className={classes.videoSection}>
+        <div className={classes.videoContainer}>
+          <span>Playback</span>
+          <video className={classes.video} ref={videoElementRef}></video>
+        </div>
+      </section>}
+    </main>
   );
 }
